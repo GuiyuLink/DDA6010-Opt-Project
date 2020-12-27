@@ -25,12 +25,12 @@ def plot3D(m, n, Z):
 METHOD = 1
 func_num = 1
 FUNC = 'func_class.func{}'.format(func_num)
-OPT = [2.067380905151367, None, None, None, None][func_num]
+OPT = [2.067380905151367, 2.1410255432128906, 1.2063673734664917, 1.0187329445407338, 3.086641232606508][func_num]
 
 if __name__ == "__main__":
     # parameters
-    m, n = 100, 100
-    tol = 1e-7
+    m, n = 50, 50
+    tol = 1e-6
     s, sigma, gamma = 1, 0.5, 0.1
     beta1 = beta2 = 1e-6
     p = 0.1
@@ -46,13 +46,13 @@ if __name__ == "__main__":
     if METHOD == 0:
         points, iterations = gradient_method_backtracking(problem.obj, problem.grad, x, tol, s, sigma, gamma)
     elif METHOD == 1:
-        points, iterations = (globalized_newton(problem.obj, problem.grad, problem.hess, x,  tol, s, sigma, gamma, beta1, beta2, p))
+        points, iterations = globalized_newton(problem.obj, problem.grad, problem.hess, x,  tol, s, sigma, gamma, beta1, beta2, p)
     elif METHOD == 2:
         pass 
     elif METHOD == 3:
         pass 
     elif METHOD == 4:
-        points, iterations = (BB_gradient(problem.obj, problem.grad, x, tol, s, sigma, gamma))
+        points, iterations = BB_gradient(problem.obj, problem.grad, x, tol, s, sigma, gamma)
     elif METHOD == 5:
         pass 
     elif METHOD == 6:

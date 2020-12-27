@@ -16,7 +16,7 @@ class Problem():
         x = x.reshape(self.m-2, self.n-2)
         inputs[1:-1, 1:-1] = x
         self.model.bound_constrain(inputs)
-        inputs = torch.tensor(inputs, dtype=torch.float32, requires_grad=requires_grad)
+        inputs = torch.tensor(inputs, dtype=torch.float64, requires_grad=requires_grad)
         return inputs
 
     def obj(self, x):
