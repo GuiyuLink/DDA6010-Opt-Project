@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import numpy as np
+import time 
 
 def globalized_newton(obj, grad, hess, x, tol, s, sigma, gamma, beta_1, beta_2, p):
     """
@@ -16,10 +17,15 @@ def globalized_newton(obj, grad, hess, x, tol, s, sigma, gamma, beta_1, beta_2, 
     """
     print("-"*30)
     print("Globalized Newton start")
+    start_time = time.time()
     iterations = 0
     points = [x]
     grad_x = grad(x)
-    while np.linalg.norm(grad_x) > tol:
+    grad_norm = [np.linalg.norm(grad_x)]
+    objs = [obj(x)]
+    start_time = time.time()
+    times = [time.time()-start_time]
+    while grad_norm[-1] > tol:
         # initial step size
         d = - np.linalg.solve(hess(x), grad_x)
         norm_d = np.linalg.norm(d)
@@ -36,9 +42,12 @@ def globalized_newton(obj, grad, hess, x, tol, s, sigma, gamma, beta_1, beta_2, 
         # update iterations
         iterations += 1
         grad_x = grad(x)
-        print(iterations, obj(x), np.linalg.norm(grad_x))
+        grad_norm.append(np.linalg.norm(grad_x))
+        print('iter: {}, obj: {:.10f}, grad_norm: {:.6g}'.format(iterations, obj(x), grad_norm[-1]))
+        times.append(time.time()-start_time)
+        objs.append(obj(x))
 
     print("iterations: ", iterations, " | x: ", x, " | grad: ", grad_x, " | norm: ", np.linalg.norm(grad_x))
     print("Globalized Newton end")
     print("-"*30)
-    return points, iterations
+    return points, objs, grad_norm, times

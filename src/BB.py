@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import numpy as np
+import time 
 
 def gradient_method_backtracking(obj, grad, x, tol, s, sigma, gamma):
     """
@@ -14,13 +15,17 @@ def gradient_method_backtracking(obj, grad, x, tol, s, sigma, gamma):
     """
     iterations = 0
     points = [x]
-    while np.linalg.norm(grad(x)) > tol:
+    grad_norm = [np.linalg.norm(grad(x))]
+    objs = [obj(x)]
+    start_time = time.time()
+    times = [0]
+    while grad_norm[-1] > tol:
         # initial step size
         a = s
         # store the gradient of x^k
         grad_x = grad(x)
         # estimate Armijo condition
-        while obj(x - a * grad_x) - obj(x) > - gamma * a * grad_x.dot(grad_x):
+        while obj(x - a * grad_x) - objs[-1] > - gamma * a * grad_x.dot(grad_x):
             a = a * sigma
 
         # update point
@@ -32,9 +37,12 @@ def gradient_method_backtracking(obj, grad, x, tol, s, sigma, gamma):
         points.append(x)
         # update iterations
         iterations += 1
-        print(iterations, obj(x), np.linalg.norm(grad_x))
+        grad_norm.append(np.linalg.norm(grad_x))
+        print('iter: {}, obj: {:.10f}, grad_norm: {:.6g}'.format(iterations, obj(x), grad_norm[-1]))
+        times.append(time.time()-start_time)
+        objs.append(obj(x))
 
-    return points, iterations
+    return points, objs, grad_norm, times
 
 def BB_gradient(obj, grad, x, tol, s, sigma, gamma, initial_method="backtracking"):
     """
@@ -53,6 +61,7 @@ def BB_gradient(obj, grad, x, tol, s, sigma, gamma, initial_method="backtracking
     print("-"*30)
     print("BB gradient start")
     iterations = 0
+    start_time = time.time()
     points = [x]
     last_grad_x = grad(x)
     # initial step size
@@ -65,8 +74,11 @@ def BB_gradient(obj, grad, x, tol, s, sigma, gamma, initial_method="backtracking
     points.append(x)
     iterations += 1
     current_grad_x = grad(x)
+    grad_norm = [np.linalg.norm(current_grad_x)]
+    objs = [obj(x)]
+    times = [time.time()-start_time]
     # --- iteration by BB steps ---
-    while np.linalg.norm(current_grad_x) > tol:
+    while grad_norm[-1] > tol:
         # compute step size a
         z = x - points[-2] # z = x_k - x_{k-1}
         y = current_grad_x - last_grad_x # y = g_k - g_{k-1}
@@ -76,14 +88,17 @@ def BB_gradient(obj, grad, x, tol, s, sigma, gamma, initial_method="backtracking
         iterations += 1
         last_grad_x = current_grad_x
         current_grad_x = grad(x)
-        print(iterations, obj(x), np.linalg.norm(current_grad_x))
+        grad_norm.append(np.linalg.norm(current_grad_x))
+        print('iter: {}, obj: {:.10f}, grad_norm: {:.6g}'.format(iterations, obj(x), grad_norm[-1]))
+        times.append(time.time()-start_time)
+        objs.append(obj(x))
 
         # print("iterations: ", iterations, " | x: ", x, " | grad: ", current_grad_x, " | norm: ", np.linalg.norm(current_grad_x))
 
     print("iterations: ", iterations, " | x: ", x, " | grad: ", current_grad_x, " | norm: ", np.linalg.norm(current_grad_x))
     print("BB gradient end")
     print("-"*30)
-    return points, iterations
+    return points, objs, grad_norm, times
 
 def BB_gradient_nonmonotone(obj, grad, x, tol, s, sigma, gamma, sigma_1, sigma_2, a_m, a_M, M, delta, rho):
     """
@@ -106,9 +121,12 @@ def BB_gradient_nonmonotone(obj, grad, x, tol, s, sigma, gamma, sigma_1, sigma_2
     print("-"*30)
     print("BB gradient nonmonotone start")
     iterations = 0
+    start_time = time.time()
     points = [x]
     objs = [obj(x)]
     grad_x = grad(x)
+    grad_norm = [np.linalg.norm(grad_x)]
+    times = [time.time()-start_time]
     # initial step size
     a = s
     # estimate Armijo condition
@@ -120,6 +138,8 @@ def BB_gradient_nonmonotone(obj, grad, x, tol, s, sigma, gamma, sigma_1, sigma_2
     objs.append(obj(x))
     iterations += 1
     current_grad_x = grad(x)
+    grad_norm.append(np.linalg.norm(current_grad_x))
+    times.append(time.time()-start_time)
     while np.linalg.norm(current_grad_x) > tol:
         last_grad_x = grad(x)
         if (a_m >= a) or (a >= a_M):
@@ -137,9 +157,11 @@ def BB_gradient_nonmonotone(obj, grad, x, tol, s, sigma, gamma, sigma_1, sigma_2
         current_grad_x = grad(x)
         a = - current_grad_x.dot(current_grad_x - last_grad_x) / (lam * current_grad_x.dot(current_grad_x))
         # print("dwt | a: ", a)
-        print(iterations, obj(x), np.linalg.norm(grad_x))
+        grad_norm.append(np.linalg.norm(current_grad_x))
+        print('iter: {}, obj: {:.10f}, grad_norm: {:.6g}'.format(iterations, obj(x), grad_norm[-1]))
+        times.append(time.time()-start_time)
         # print("iterations: ", iterations, " | x: ", x, " | grad: ", current_grad_x, " | norm: ", np.linalg.norm(current_grad_x))
     print("iterations: ", iterations, " | x: ", x, " | grad: ", current_grad_x, " | norm: ", np.linalg.norm(current_grad_x))
     print("BB gradient nonmonotone end")
     print("-"*30)
-    return points, iterations
+    return points, objs, grad_norm, times
