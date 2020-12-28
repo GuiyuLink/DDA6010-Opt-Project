@@ -11,12 +11,15 @@ from problem_wrap import Problem
 
 
 def plot3D(m, n, Z):
-    x = np.linspace(0, 1, n)
-    y = np.linspace(0, 1, m)
+    x = np.linspace(0, 1, m)
+    y = np.linspace(0, 1, n)
     X, Y = np.meshgrid(x, y)
 
     fig = plt.figure()
     ax = fig.gca(projection='3d')
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
     surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm, linewidth=0, antialiased=False)
 
 # method: 0: basic GD with backtracking, 1: globalized Newton method,  2: L-BFGS
@@ -71,6 +74,6 @@ if __name__ == "__main__":
     x = x.reshape(m-2, n-2)
     inputs[1:-1, 1:-1] = x
     problem.model.bound_constrain(inputs)
-    plot3D(m,n,inputs)
+    plot3D(m, n, inputs.T)
     plt.savefig('../report/{}_method{}.pdf'.format(FUNC, METHOD))
     plt.show()
