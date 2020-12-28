@@ -6,7 +6,8 @@ from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 
 from BB import BB_gradient, gradient_method_backtracking
 from boundary import FuncClass
-from newton import globalized_newton
+from newton import globalized_newton, BFGS
+from projection import projected_gradient
 from problem_wrap import Problem
 
 
@@ -22,13 +23,23 @@ def plot3D(m, n, Z):
     ax.set_zlabel('Z')
     surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm, linewidth=0, antialiased=False)
 
-# method: 0: basic GD with backtracking, 1: globalized Newton method,  2: L-BFGS
-# 3: nonmonotone line search procedures, 4: Barzilai-Borwein steps 5: inertial techniques and momentum
-# 6: compact representation of the L-BFGS update
+'''
+ Unconstraned method: 
+    0: basic GD with backtracking
+    1: globalized Newton method
+    2: L-BFGS
+    3: nonmonotone line search procedures
+    4: Barzilai-Borwein steps 
+    5: inertial techniques and momentum
+    6: compact representation of the L-BFGS update
+Constraned method:
+    0: Projected Gradient
+'''
 METHOD = 1
 func_num = 1
 FUNC = 'func_class.func{}'.format(func_num)
 OPT = [2.067380905151367, 2.1410255432128906, 1.2063673734664917, 1.0187329445407338, 3.086641232606508][func_num]
+LB = False # Whether lower bouneded
 
 if __name__ == "__main__":
     # parameters
@@ -46,21 +57,31 @@ if __name__ == "__main__":
     x = np.zeros((m-2)*(n-2))
 
     # algorithm
-    if METHOD == 0:
-        points, iterations = gradient_method_backtracking(problem.obj, problem.grad, x, tol, s, sigma, gamma)
-    elif METHOD == 1:
-        points, iterations = globalized_newton(problem.obj, problem.grad, problem.hess, x,  tol, s, sigma, gamma, beta1, beta2, p)
-    elif METHOD == 2:
-        pass 
-    elif METHOD == 3:
-        pass 
-    elif METHOD == 4:
-        points, iterations = BB_gradient(problem.obj, problem.grad, x, tol, s, sigma, gamma)
-    elif METHOD == 5:
-        pass 
-    elif METHOD == 6:
-        pass 
-
+    if not LB:
+        if METHOD == 0:
+            points, iterations = gradient_method_backtracking(problem.obj, problem.grad, x, tol, s, sigma, gamma)
+        elif METHOD == 1:
+            points, iterations = globalized_newton(problem.obj, problem.grad, problem.hess, x,  tol, s, sigma, gamma, beta1, beta2, p)
+        elif METHOD == 2:
+            points, iterations = BFGS(problem.obj, problem.grad, problem.hess, x,  tol, s, sigma, gamma, beta1, beta2, p) 
+        elif METHOD == 3:
+            pass 
+        elif METHOD == 4:
+            points, iterations = BB_gradient(problem.obj, problem.grad, x, tol, s, sigma, gamma)
+        elif METHOD == 5:
+            pass 
+        elif METHOD == 6:
+            pass 
+    else:
+        # Construct the lower bound vector
+        lower_bound = -np.ones((m-2, n-2)) * np.inf
+        lower_bound[[7, 14, 21, 28, 35], 10:50] = 1.5
+        lower_bound = lower_bound.flatten()
+        
+        if METHOD == 0:
+            # Set \lambda_k value (should be bounded)
+            lambda_k = lambda k: 0.5
+            points, iterations = projected_gradient(problem.obj, problem.grad, x, tol, s, sigma, gamma, lambda_k, lower_bound)
     # # plot gap
     # gap = []
     # for x in points:
