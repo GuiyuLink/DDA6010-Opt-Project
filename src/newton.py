@@ -21,7 +21,7 @@ def globalized_newton(obj, grad, hess, x, tol, s, sigma, gamma, beta_1, beta_2, 
     grad_x = grad(x)
     while np.linalg.norm(grad_x) > tol:
         # initial step size
-        d = - np.linalg.inv(hess(x)).dot(grad_x)
+        d = - np.linalg.solve(hess(x), grad_x)
         norm_d = np.linalg.norm(d)
         if - d.dot(grad_x) < np.min([beta_1, beta_2 * (norm_d ** p)]) * norm_d * norm_d:
             d = - grad_x
