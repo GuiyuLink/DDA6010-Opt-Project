@@ -35,11 +35,11 @@ def plot3D(m, n, Z):
 Constraned method:
     0: Projected Gradient
 '''
-METHOD = 4
+METHOD = 0
 func_num = 0
 FUNC = 'func_class.func{}'.format(func_num)
 OPT = [2.0725090145, 2.1410255432128906, 1.2063673734664917, 1.0187329445407338, 3.086641232606508][func_num]
-LB = False # Whether lower bouneded
+LB = 1 # Whether lower bouneded
 
 if __name__ == "__main__":
     # parameters
@@ -63,7 +63,7 @@ if __name__ == "__main__":
         elif METHOD == 1:
             points, objs, grad_norm, times = globalized_newton(problem.obj, problem.grad, problem.hess, x,  tol, s, sigma, gamma, beta1, beta2, p)
         elif METHOD == 2:
-            pass 
+            points, objs, grad_norm, times = BFGS(problem.obj, problem.grad, problem.hess, x,  tol, s, sigma, gamma, beta1, beta2, p) 
         elif METHOD == 3:
             # points, objs, grad_norm, times = BB_gradient_nonmonotone(problem.obj, problem.grad, x,  tol, s, sigma)
             pass
@@ -83,7 +83,7 @@ if __name__ == "__main__":
         if METHOD == 0:
             # Set \lambda_k value (should be bounded)
             lambda_k = lambda k: 0.5
-            points, iterations = projected_gradient(problem.obj, problem.grad, x, tol, s, sigma, gamma, lambda_k, lower_bound)
+            points, objs, grad_norm, times = projected_gradient(problem.obj, problem.grad, x, tol, s, sigma, gamma, lambda_k, lower_bound)
 
             
     # plot gap

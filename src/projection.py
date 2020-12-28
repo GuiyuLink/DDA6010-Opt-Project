@@ -1,4 +1,5 @@
 import numpy as np
+import time
 
 def projected_gradient(obj, grad, x, tol, s, sigma, gamma, lambda_k, lower_bound):
     """
@@ -14,9 +15,13 @@ def projected_gradient(obj, grad, x, tol, s, sigma, gamma, lambda_k, lower_bound
     """
     iterations = 0
     # Project the initial point on the box set
+    start_time = time.time()
     x = np.maximum(x, lower_bound)
     points = [x]
     d_norm = tol + 1
+    grad_norm = [d_norm]
+    objs = [obj(x)]
+    times = [time.time()-start_time]
     while d_norm > tol:
         # initial step size
         a = s
@@ -34,6 +39,9 @@ def projected_gradient(obj, grad, x, tol, s, sigma, gamma, lambda_k, lower_bound
         # update iterations
         iterations += 1
         d_norm = np.linalg.norm(d)
-        print(iterations, obj(x), d_norm)
+        grad_norm.append(d_norm)
+        objs.append(obj(x))
+        print('iter: {}, obj: {:.10f}, grad_norm: {:.6g}'.format(iterations, objs[-1], grad_norm[-1]))
+        times.append(time.time()-start_time)
 
-    return points, iterations
+    return points, objs, grad_norm, times

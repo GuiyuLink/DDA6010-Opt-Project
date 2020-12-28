@@ -23,7 +23,6 @@ def globalized_newton(obj, grad, hess, x, tol, s, sigma, gamma, beta_1, beta_2, 
     grad_x = grad(x)
     grad_norm = [np.linalg.norm(grad_x)]
     objs = [obj(x)]
-    start_time = time.time()
     times = [time.time()-start_time]
     while grad_norm[-1] > tol:
         # initial step size
@@ -66,13 +65,17 @@ def BFGS(obj, grad, hess, x, tol, s, sigma, gamma, beta_1, beta_2, p):
     """
     print("-"*30)
     print("BFGS start")
+    start_time = time.time()
     iterations = 0
     points = [x]
     grad_x = grad(x)
+    grad_norm = [np.linalg.norm(grad_x)]
+    objs = [obj(x)]
     # set the initial B as hessian
     print('Calculate the Initial Hessian')
     B = hess(x)
     B_inv = np.linalg.inv(B)
+    times = [time.time()-start_time]
     while np.linalg.norm(grad_x) > tol:
         # initial step size
         d = - B_inv.dot(grad_x)
@@ -95,9 +98,12 @@ def BFGS(obj, grad, hess, x, tol, s, sigma, gamma, beta_1, beta_2, p):
         # update iterations
         iterations += 1
         grad_x = grad(x)
-        print(iterations, obj(x), np.linalg.norm(grad_x))
+        grad_norm.append(np.linalg.norm(grad_x))
+        objs.append(obj(x))
+        print('iter: {}, obj: {:.10f}, grad_norm: {:.6g}'.format(iterations, objs[-1], grad_norm[-1]))
+        times.append(time.time()-start_time)
 
     print("iterations: ", iterations, " | x: ", x, " | grad: ", grad_x, " | norm: ", np.linalg.norm(grad_x))
     print("BFGS end")
     print("-"*30)
-    return points, iterations
+    return points, objs, grad_norm, times
