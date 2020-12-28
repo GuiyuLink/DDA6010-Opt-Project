@@ -9,6 +9,7 @@ from boundary import FuncClass
 from newton import globalized_newton, BFGS
 from projection import projected_gradient
 from problem_wrap import Problem
+from net import accelerate_method
 
 
 def plot3D(m, n, Z):
@@ -24,7 +25,7 @@ def plot3D(m, n, Z):
     surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm, linewidth=0, antialiased=False)
 
 '''
- Unconstraned method: 
+Unconstrained method: 
     0: basic GD with backtracking
     1: globalized Newton method
     2: L-BFGS
@@ -32,14 +33,15 @@ def plot3D(m, n, Z):
     4: Barzilai-Borwein steps 
     5: inertial techniques and momentum
     6: compact representation of the L-BFGS update
-Constraned method:
+    7: Adam
+Constrained method:
     0: Projected Gradient
 '''
-METHOD = 0
+METHOD = 7
 func_num = 0
 FUNC = 'func_class.func{}'.format(func_num)
 OPT = [2.0725090145, 2.1410255432128906, 1.2063673734664917, 1.0187329445407338, 3.086641232606508][func_num]
-LB = 1 # Whether lower bouneded
+LB = 0 # Whether lower bounded
 
 if __name__ == "__main__":
     # parameters
@@ -48,6 +50,7 @@ if __name__ == "__main__":
     s, sigma, gamma = 1, 0.5, 0.1
     beta1 = beta2 = 1e-6
     p = 0.1
+    max_iter, lr = 3000, 0.002
 
     func_class = FuncClass()
     problem = Problem(eval(FUNC), m, n)
@@ -73,6 +76,8 @@ if __name__ == "__main__":
             pass 
         elif METHOD == 6:
             pass 
+        elif METHOD == 7:
+            points, objs, grad_norm, times = accelerate_method(eval(FUNC), m, n, lr, max_iter, tol)
 
     else:
         # Construct the lower bound vector

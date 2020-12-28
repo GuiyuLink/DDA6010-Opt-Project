@@ -84,6 +84,30 @@ def plot3D(m, n, Z):
                        linewidth=0, antialiased=False)
     plt.show()
 
+def accelerate_method(func, m, n, learning_rate, max_iter, tol):
+    import time 
+    model = Net(func, m, n)
+    import torch.optim as optim
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    start_time = time.time()
+    grad_norm = []
+    objs = []
+    times = []
+    for iteration in range(max_iter):
+        optimizer.zero_grad()   # zero the gradient buffers
+        loss = model()
+        loss.backward()
+        optimizer.step()    # Does the update
+        model.bound_constrain(model.x.data)
+        objs.append(loss.item())
+        grad = np.linalg.norm(model.x.grad.data.numpy()[1:-1,1:-1])
+        grad_norm.append(grad)
+        times.append(time.time() - start_time)
+        print('iter: {}, obj: {:.10f}, grad_norm: {:.6g}'.format(iteration, objs[-1], grad_norm[-1]))
+        if grad < tol:
+            break
+    return [model.x.data.numpy()[1:-1,1:-1]], objs, grad_norm, times
+
 
 
 if __name__ == "__main__":
@@ -109,6 +133,7 @@ if __name__ == "__main__":
         loss = model()
         loss.backward()
         optimizer.step()    # Does the update
+        model.x.grad.data
         model.bound_constrain(model.x.data)
         # model.x.data[0,0] = 0
         print(loss.item())
