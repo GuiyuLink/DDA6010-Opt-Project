@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Dec 27 20:55:19 2020
-
-@author: Jacky Li
-"""
-
 import numpy as np
 
 def projected_gradient(obj, grad, x, tol, s, sigma, gamma, lambda_k, lower_bound):
